@@ -1,51 +1,56 @@
+import { useState } from 'react'
 import { useApp } from '../../context/AppContext'
 import BottomNav from '../layout/BottomNav'
 import SOSFab from '../layout/SOSFab'
 
-const ACHIEVEMENTS = [
-  { emoji: '🔥', name: '7-Day Streak', locked: false },
-  { emoji: '💊', name: 'Med Master',   locked: false },
-  { emoji: '🧘', name: 'Zen Starter',  locked: false },
-  { emoji: '🌟', name: '30-Day Bro',   locked: true  },
-  { emoji: '🏆', name: 'Lung Legend',  locked: true  },
-]
-
-const GOALS = [
-  { icon: '🔥', label: '14-day logging streak',  pct: (s: number) => Math.min(Math.round((s / 14) * 100), 100), sub: (s: number) => `${s} of 14 days complete` },
-  { icon: '💊', label: 'Perfect medication week', pct: (a: number) => a, sub: (a: number) => a >= 100 ? 'Perfect week! 🌟' : `${a}% taken this session` },
-]
-
 export default function Profile() {
   const {
+    navigate,
     broEmoji, userName, city,
-    profiles, activeProfileId, switchProfile, startNewProfile,
+    profiles, activeProfileId, switchProfile, startNewProfile, removeProfile,
     streak, checkIns, adherence,
   } = useApp()
 
-  const monthLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+
+  const monthLabel  = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
   const totalCheckIns = checkIns.length
 
-  // Unlock achievements dynamically
-  const unlockedStreak7  = streak >= 7
-  const unlockedMedMaster = adherence >= 80
-  const unlockedZenStarter = true // always unlocked once you open BroZen
-  const unlockedStreak30 = streak >= 30
-
+  // Dynamic achievements
   const achievements = [
-    { emoji: '🔥', name: '7-Day Streak',  locked: !unlockedStreak7    },
-    { emoji: '💊', name: 'Med Master',    locked: !unlockedMedMaster  },
-    { emoji: '🧘', name: 'Zen Starter',   locked: !unlockedZenStarter },
-    { emoji: '🌟', name: '30-Day Bro',    locked: !unlockedStreak30   },
-    { emoji: '🏆', name: 'Lung Legend',   locked: streak < 60         },
+    { emoji: '🔥', name: '7-Day Streak',  locked: streak < 7       },
+    { emoji: '💊', name: 'Med Master',    locked: adherence < 80   },
+    { emoji: '🧘', name: 'Zen Starter',   locked: false            },
+    { emoji: '🌟', name: '30-Day Bro',    locked: streak < 30      },
+    { emoji: '🏆', name: 'Lung Legend',   locked: streak < 60      },
   ]
 
   const displayName = userName.trim() || 'Anonymous Bro'
-  const displayCity = city.trim() || 'Your City'
+  const displayCity = city.trim()     || 'Your City'
+
+  const handleRemove = (id: string) => {
+    if (confirmDelete === id) {
+      removeProfile(id)
+      setConfirmDelete(null)
+    } else {
+      setConfirmDelete(id)
+    }
+  }
 
   return (
     <div className="screen active">
+      {/* Profile header */}
       <div className="prof-hdr">
-        <div style={{ position: 'absolute', top: 50, right: 20, background: 'rgba(255,255,255,.2)', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, color: 'white', cursor: 'pointer' }}>
+        {/* Edit button */}
+        <div
+          onClick={() => navigate('edit')}
+          style={{
+            position: 'absolute', top: 50, right: 20,
+            background: 'rgba(255,255,255,.22)', padding: '6px 12px',
+            borderRadius: 20, fontSize: 12, fontWeight: 600, color: 'white',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
+          }}
+        >
           Edit ✏️
         </div>
         <div className="prof-av">{broEmoji}</div>
@@ -53,6 +58,7 @@ export default function Profile() {
         <div className="prof-tp">{displayCity}</div>
       </div>
 
+      {/* Stats strip */}
       <div className="scroll">
         <div className="prof-stats">
           <div className="pst">
@@ -70,6 +76,7 @@ export default function Profile() {
         </div>
 
         <div className="prof-body">
+
           {/* Achievements */}
           <div className="sec">Achievements 🏆</div>
           <div className="ach-row">
@@ -108,7 +115,11 @@ export default function Profile() {
 
           {/* Monthly report */}
           <div className="sec">Monthly Report 📄</div>
-          <div className="card" style={{ padding: 14, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
+          <div
+            className="card"
+            style={{ padding: 14, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
+            onClick={() => navigate('report')}
+          >
             <div style={{ fontSize: 28 }}>📄</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--charcoal)' }}>
@@ -118,12 +129,15 @@ export default function Profile() {
                 {totalCheckIns} check-in{totalCheckIns !== 1 ? 's' : ''} · Symptom trends · Adherence
               </div>
             </div>
-            <div style={{ background: '#EEF7FF', color: 'var(--sky)', fontSize: 11, fontWeight: 700, padding: '5px 9px', borderRadius: 20 }}>
-              View / Share
+            <div style={{
+              background: '#EEF7FF', color: 'var(--sky)',
+              fontSize: 11, fontWeight: 700, padding: '5px 9px', borderRadius: 20,
+            }}>
+              View →
             </div>
           </div>
 
-          {/* ── Profiles ── */}
+          {/* Profiles */}
           <div className="sec" style={{ marginTop: 22 }}>Profiles 👥</div>
           {profiles.map(p => (
             <div key={p.id} className="profile-card">
@@ -134,15 +148,51 @@ export default function Profile() {
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--light)' }}>{p.city || 'No city set'}</div>
               </div>
+
               {p.id === activeProfileId ? (
                 <div className="profile-card-active">Active ✓</div>
               ) : (
-                <button className="profile-card-switch" onClick={() => switchProfile(p.id)}>
+                <button
+                  className="profile-card-switch"
+                  onClick={() => { setConfirmDelete(null); switchProfile(p.id); }}
+                >
                   Switch
+                </button>
+              )}
+
+              {/* Delete button (only non-active, or active if there are others) */}
+              {profiles.length > 1 && (
+                <button
+                  onClick={() => handleRemove(p.id)}
+                  style={{
+                    marginLeft: 6,
+                    width: 28, height: 28,
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: confirmDelete === p.id ? '#FF5252' : '#F5F7FA',
+                    color:      confirmDelete === p.id ? 'white'   : '#aaa',
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                    transition: '.2s',
+                  }}
+                  title={confirmDelete === p.id ? 'Tap again to confirm' : 'Remove profile'}
+                >
+                  {confirmDelete === p.id ? '✓' : '×'}
                 </button>
               )}
             </div>
           ))}
+
+          {confirmDelete && (
+            <div style={{
+              fontSize: 12, color: 'var(--danger)', textAlign: 'center',
+              marginBottom: 10, fontWeight: 600,
+            }}>
+              Tap × again to confirm removal
+            </div>
+          )}
 
           <button className="add-med" style={{ marginBottom: 14 }} onClick={startNewProfile}>
             + Add Profile

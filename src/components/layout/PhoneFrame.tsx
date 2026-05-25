@@ -13,6 +13,8 @@ import BroZen from '../screens/BroZen'
 import BreathingSession from '../screens/BreathingSession'
 import Profile from '../screens/Profile'
 import Emergency from '../screens/Emergency'
+import EditProfile from '../screens/EditProfile'
+import MonthlyReport from '../screens/MonthlyReport'
 
 const SCREENS: Record<ScreenId, React.ComponentType> = {
   splash: Splash,
@@ -27,6 +29,8 @@ const SCREENS: Record<ScreenId, React.ComponentType> = {
   breath: BreathingSession,
   prof: Profile,
   emg: Emergency,
+  edit: EditProfile,
+  report: MonthlyReport,
 }
 
 export default function PhoneFrame() {

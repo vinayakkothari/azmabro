@@ -10,7 +10,9 @@ export type ScreenId =
   | 'bz'
   | 'breath'
   | 'prof'
-  | 'emg';
+  | 'emg'
+  | 'edit'
+  | 'report';
 
 export type NavTab = 'home' | 'sym' | 'bz' | 'prof';
 

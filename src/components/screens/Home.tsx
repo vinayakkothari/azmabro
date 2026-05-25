@@ -1,4 +1,5 @@
 import { useApp } from '../../context/AppContext'
+import { useWeather } from '../../hooks/useWeather'
 import BottomNav from '../layout/BottomNav'
 import SOSFab from '../layout/SOSFab'
 
@@ -53,16 +54,20 @@ function buildWeekBars(checkIns: { date: string; score: number }[]) {
 
 export default function Home() {
   const { navigate, petEmoji, city, userName, streak, checkIns, medications } = useApp()
+  const wx = useWeather(city)
 
-  const greeting   = getGreeting()
-  const dateStr    = getDateString()
-  const tip        = getDailyTip()
-  const weekBars   = buildWeekBars(checkIns)
+  const greeting    = getGreeting()
+  const dateStr     = getDateString()
+  const tip         = getDailyTip()
+  const weekBars    = buildWeekBars(checkIns)
   const displayCity = city.trim() || 'Your City'
 
   const takenToday = medications.filter(m => !m.isRescue && m.taken).length
   const totalMeds  = medications.filter(m => !m.isRescue).length
   const medsLabel  = takenToday === totalMeds ? `Meds ✅` : `Meds ${takenToday}/${totalMeds}`
+
+  // AQI display
+  const aqiNumStr = wx.loading ? '…' : wx.error ? '--' : String(wx.aqi)
 
   return (
     <div className="screen active">
@@ -82,6 +87,9 @@ export default function Home() {
           <div className="stat-pills">
             <div className="spill">🔥 {streak > 0 ? `${streak} day streak` : 'Start your streak!'}</div>
             <div className="spill">💊 {medsLabel}</div>
+            {!wx.loading && !wx.error && (
+              <div className="spill">🌡️ {wx.tempC}°C</div>
+            )}
             <div className="spill">🌬️ {displayCity}</div>
           </div>
         </div>
@@ -97,19 +105,40 @@ export default function Home() {
             <div className="ci-arr">→</div>
           </div>
 
-          {/* AQI */}
+          {/* Live AQI card */}
           <div className="aqi-card">
-            <div className="aqi-dot aqi-good">🌿</div>
+            <div className={`aqi-dot ${wx.aqiDotCls}`} style={{ fontSize: 22, background: `${wx.aqiColor}22` }}>
+              {wx.loading ? '⏳' : wx.error ? '🚫' : wx.aqiEmoji}
+            </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11, color: 'var(--light)', fontWeight: 500 }}>
                 Air Quality · {displayCity}
+                {wx.loading && <span style={{ marginLeft: 6, opacity: .6 }}>fetching…</span>}
               </div>
-              <div className="aqi-val">
-                42 <span style={{ fontSize: 14, fontWeight: 500 }}>Good</span>
+              <div className="aqi-val" style={{ color: wx.error ? 'var(--light)' : wx.aqiColor }}>
+                {aqiNumStr}{' '}
+                <span style={{ fontSize: 14, fontWeight: 500 }}>
+                  {wx.error ? 'Unavailable' : wx.loading ? '' : wx.aqiLabel}
+                </span>
               </div>
-              <div className="aqi-ds">Pollen: Low · Humidity: 68% · Wind: 12 km/h</div>
+              {!wx.loading && !wx.error ? (
+                <div className="aqi-ds">
+                  PM2.5: {wx.pm25} µg/m³ · Humidity: {wx.humidity}% · Wind: {wx.windKmh} km/h
+                </div>
+              ) : wx.error ? (
+                <div className="aqi-ds">Check your city name in Profile settings</div>
+              ) : (
+                <div className="aqi-ds">Loading live data…</div>
+              )}
             </div>
-            <div className="aqi-badge">Safe to go out 👍</div>
+            {!wx.loading && !wx.error && (
+              <div
+                className="aqi-badge"
+                style={{ background: `${wx.aqiColor}18`, color: wx.aqiColor, whiteSpace: 'nowrap' }}
+              >
+                {wx.aqiBadge}
+              </div>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -145,7 +174,7 @@ export default function Home() {
           <div className="mini-chart">
             <div className="bars">
               {weekBars.map((b, i) => {
-                const cfg = BAR_CONFIG[b.score === null ? 'null' : b.score]
+                const cfg     = BAR_CONFIG[b.score === null ? 'null' : b.score]
                 const isToday = b.today
                 return (
                   <div key={i} className="bar-wrap">
