@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local serve artifacts
+node_modules/
+.cache/
+dist/
