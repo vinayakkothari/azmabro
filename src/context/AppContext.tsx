@@ -67,27 +67,30 @@ const DEMO_PROFILE: Profile = {
 };
 
 function seedIfNeeded() {
-  // Always ensure Demo Bro exists in the profiles list
-  const existing: Profile[] = (() => {
-    try { return JSON.parse(localStorage.getItem('az_profiles') ?? '[]'); } catch { return []; }
-  })();
+  try {
+    // Always ensure Demo Bro exists in the profiles list
+    const existing: Profile[] = (() => {
+      try { return JSON.parse(localStorage.getItem('az_profiles') ?? '[]'); } catch { return []; }
+    })();
 
-  const hasDemo = existing.some(p => p.id === 'demo');
-  if (!hasDemo) {
-    const updated = [...existing, DEMO_PROFILE];
-    localStorage.setItem('az_profiles', JSON.stringify(updated));
-  }
+    const hasDemo = existing.some(p => p.id === 'demo');
+    if (!hasDemo) {
+      save('az_profiles', [...existing, DEMO_PROFILE]);
+    }
 
-  // First-time full seed (check-ins + meds) — only when starting from scratch
-  if (localStorage.getItem(SEED_KEY)) return;
-  localStorage.setItem(SEED_KEY, '1');
+    // First-time full seed (check-ins + meds) — only when starting from scratch
+    if (localStorage.getItem(SEED_KEY)) return;
+    save(SEED_KEY, '1');
 
-  if (existing.length === 0) {
-    // Brand new user — seed check-ins and set demo as active
-    const seedMeds = DEFAULT_MEDICATIONS.map(m => ({ ...m, taken: !m.isRescue }));
-    localStorage.setItem('az_checkins', JSON.stringify(generateSeedCheckIns()));
-    localStorage.setItem('az_meds',     JSON.stringify(seedMeds));
-    localStorage.setItem('az_activeId', 'demo');
+    if (existing.length === 0) {
+      // Brand new user — seed check-ins and set demo as active
+      const seedMeds = DEFAULT_MEDICATIONS.map(m => ({ ...m, taken: !m.isRescue }));
+      save('az_checkins', generateSeedCheckIns());
+      save('az_meds',     seedMeds);
+      save('az_activeId', 'demo');
+    }
+  } catch {
+    // localStorage unavailable (private mode, storage quota) — skip seeding, app still works
   }
 }
 
