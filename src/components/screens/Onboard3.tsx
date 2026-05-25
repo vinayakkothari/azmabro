@@ -1,7 +1,7 @@
 import { useApp } from '../../context/AppContext'
 
 export default function Onboard3() {
-  const { navigate } = useApp()
+  const { navigate, completeOnboarding, city, setCity } = useApp()
 
   return (
     <div className="screen active">
@@ -11,17 +11,40 @@ export default function Onboard3() {
           <div className="ob-dot done" />
           <div className="ob-dot now" />
         </div>
-        <div className="ob-title">Emergency Contact 🆘</div>
-        <div className="ob-sub">If things get tough, who should we notify?</div>
+        <div className="ob-title">Almost there! 🏁</div>
+        <div className="ob-sub">A couple of details to personalise your experience</div>
       </div>
 
       <div className="ob-body scroll">
+        {/* City — used for AQI display */}
+        <div className="ig">
+          <div className="il">Your city</div>
+          <input
+            className="inp"
+            type="text"
+            placeholder="e.g. Mumbai, Delhi, Bangalore…"
+            value={city}
+            onChange={e => setCity(e.target.value)}
+          />
+          <div style={{ fontSize: 11, color: 'var(--light)', marginTop: 6 }}>
+            Used to show local air quality and pollen forecasts
+          </div>
+        </div>
+
+        {/* Emergency contact */}
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--charcoal)', margin: '18px 0 4px' }}>
+          Emergency Contact 🆘
+        </div>
+        <div style={{ fontSize: 13, color: 'var(--mid)', marginBottom: 14 }}>
+          If things get tough, who should we notify?
+        </div>
+
         <div className="warn-box">
           <div style={{ fontSize: 13, color: '#C53030', fontWeight: 600 }}>
             ⚠️ We strongly recommend adding this
           </div>
           <div style={{ fontSize: 12, color: '#8B4040', marginTop: 4, lineHeight: 1.5 }}>
-            One tap during an attack sends them your location. You can always update this in Profile.
+            One tap during an attack sends them your location.
           </div>
         </div>
 
@@ -54,10 +77,10 @@ export default function Onboard3() {
       </div>
 
       <div className="ob-foot">
-        <button className="btn-primary" onClick={() => navigate('home')}>
+        <button className="btn-primary" onClick={completeOnboarding}>
           Start Breathing Easy 🎉
         </button>
-        <button className="btn-ghost" onClick={() => navigate('home')}>Skip for now</button>
+        <button className="btn-ghost" onClick={() => navigate('ob2')}>← Back</button>
       </div>
     </div>
   )

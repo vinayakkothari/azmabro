@@ -1,88 +1,80 @@
 import { useState } from 'react'
 import { useApp } from '../../context/AppContext'
 
-interface Choice {
-  emoji: string
-  title: string
-  sub: string
-}
-
-interface Step {
-  question: string
-  choices: Choice[]
-  multi: boolean
-}
+interface Choice { emoji: string; title: string; sub: string }
+interface Step { question: string; choices: Choice[]; multi: boolean }
 
 const STEPS: Step[] = [
   {
     question: 'Hey there! How are your lungs feeling today, Bro? 🫁',
     multi: false,
     choices: [
-      { emoji: '😮', title: 'Tight & Tricky',    sub: 'Significant chest tightness / discomfort' },
-      { emoji: '😐', title: 'A Little Snug',      sub: 'Mild tightness, manageable today' },
-      { emoji: '😊', title: 'Breathing Easy!',    sub: 'No chest tightness at all' },
+      { emoji: '😮', title: 'Tight & Tricky',  sub: 'Significant chest tightness / discomfort' },
+      { emoji: '😐', title: 'A Little Snug',    sub: 'Mild tightness, manageable today' },
+      { emoji: '😊', title: 'Breathing Easy!',  sub: 'No chest tightness at all' },
     ],
   },
   {
     question: 'Any unwelcome sounds in your breath today? 👂',
     multi: false,
     choices: [
-      { emoji: '🔊', title: 'Wheezy Whistle',  sub: 'Wheezing present' },
-      { emoji: '💨', title: 'Just a Cough',     sub: 'Coughing, but no wheeze' },
-      { emoji: '🔇', title: 'Quiet & Clear',    sub: 'No wheezing or unusual sounds' },
+      { emoji: '🔊', title: 'Wheezy Whistle', sub: 'Wheezing present' },
+      { emoji: '💨', title: 'Just a Cough',   sub: 'Coughing, but no wheeze' },
+      { emoji: '🔇', title: 'Quiet & Clear',  sub: 'No wheezing or unusual sounds' },
     ],
   },
   {
     question: "How's the breathing effort, Bro? 💨",
     multi: false,
     choices: [
-      { emoji: '😤', title: 'Hard Work!',   sub: 'Struggling to breathe' },
-      { emoji: '😌', title: 'A Bit Tough',  sub: 'Noticeable effort, manageable' },
-      { emoji: '🧘', title: 'Smooth Flow',  sub: 'Breathing easily today' },
+      { emoji: '😤', title: 'Hard Work!',  sub: 'Struggling to breathe' },
+      { emoji: '😌', title: 'A Bit Tough', sub: 'Noticeable effort, manageable' },
+      { emoji: '🧘', title: 'Smooth Flow', sub: 'Breathing easily today' },
     ],
   },
   {
-    question: 'Spotted any triggers around you today? Pick all that apply 🕵️',
+    question: 'Spotted any triggers today? Pick all that apply 🕵️',
     multi: true,
     choices: [
-      { emoji: '🚬', title: 'Smoke Signal',   sub: 'Cigarette, vape, shisha' },
-      { emoji: '🌿', title: 'Pollen Party',   sub: 'Felt like high pollen today' },
-      { emoji: '🌫️', title: 'Dusty Musty',   sub: 'Dust, construction nearby' },
-      { emoji: '👃', title: 'Strong Smells',  sub: 'Perfume, cleaning products' },
-      { emoji: '🤧', title: 'Felt a Cold?',   sub: 'Could be a new illness' },
-      { emoji: '🤷', title: 'Not Sure Yet',   sub: 'Nothing obvious today' },
+      { emoji: '🚬', title: 'Smoke Signal',  sub: 'Cigarette, vape, shisha' },
+      { emoji: '🌿', title: 'Pollen Party',  sub: 'Felt like high pollen today' },
+      { emoji: '🌫️', title: 'Dusty Musty',  sub: 'Dust, construction nearby' },
+      { emoji: '👃', title: 'Strong Smells', sub: 'Perfume, cleaning products' },
+      { emoji: '🤧', title: 'Felt a Cold?',  sub: 'Could be a new illness' },
+      { emoji: '🤷', title: 'Not Sure Yet',  sub: 'Nothing obvious today' },
     ],
   },
 ]
 
+/** Derive a 0–2 score from step-0 selection (chest feel) */
+function deriveScore(step0selection: number | null): number {
+  if (step0selection === null) return 1
+  // index 0 = Tight & Tricky → bad (0), 1 = A Little Snug → ok (1), 2 = Breathing Easy → good (2)
+  return [0, 1, 2][step0selection] ?? 1
+}
+
 export default function SymptomTracker() {
-  const { navigate, broEmoji } = useApp()
+  const { navigate, broEmoji, addCheckIn } = useApp()
   const [stepIdx, setStepIdx] = useState(0)
-  const [single, setSingle] = useState<(number | null)[]>([null, null, null, null])
-  const [multi, setMulti] = useState<Set<number>>(new Set())
+  const [single, setSingle]   = useState<(number | null)[]>([null, null, null, null])
+  const [multi,  setMulti]    = useState<Set<number>>(new Set())
 
   const step = STEPS[stepIdx]
 
   const pickSingle = (i: number) => {
-    const next = [...single]
-    next[stepIdx] = i
-    setSingle(next)
+    const next = [...single]; next[stepIdx] = i; setSingle(next)
   }
-
-  const pickMulti = (i: number) => {
-    const next = new Set(multi)
-    next.has(i) ? next.delete(i) : next.add(i)
-    setMulti(next)
+  const pickMulti  = (i: number) => {
+    const next = new Set(multi); next.has(i) ? next.delete(i) : next.add(i); setMulti(next)
   }
-
-  const isSelected = (i: number) =>
-    step.multi ? multi.has(i) : single[stepIdx] === i
+  const isSelected = (i: number) => step.multi ? multi.has(i) : single[stepIdx] === i
 
   const next = () => {
     if (stepIdx < STEPS.length - 1) {
       setStepIdx(s => s + 1)
       setMulti(new Set())
     } else {
+      addCheckIn(deriveScore(single[0]))
       navigate('done')
     }
   }
@@ -97,20 +89,17 @@ export default function SymptomTracker() {
 
       <div className="scroll">
         <div className="sym-flow">
-          {/* Progress */}
           <div className="prog">
             {STEPS.map((_, i) => (
               <div key={i} className={`prog-seg${i <= stepIdx ? ' done' : ''}`} />
             ))}
           </div>
 
-          {/* Bro message */}
           <div className="bro-msg">
             <div className="bro-av">{broEmoji}</div>
             <div className="bro-bub">{step.question}</div>
           </div>
 
-          {/* Choices */}
           <div className="choices">
             {step.choices.map((c, i) => (
               <div
@@ -133,7 +122,7 @@ export default function SymptomTracker() {
               className="inp"
               style={{ marginTop: 14 }}
               type="text"
-              placeholder="🎤 Voice note or type anything..."
+              placeholder="🎤 Voice note or type anything…"
             />
           )}
 

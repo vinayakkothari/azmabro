@@ -640,3 +640,44 @@ body {
 }
 .emg-a-ic { font-size: 21px; }
 .emg-a-lb { font-size: 14px; font-weight: 600; color: white; }
+
+/* ════════════════════════════════════
+   PROFILE SWITCHER
+════════════════════════════════════ */
+.profile-card {
+  background: white; border-radius: var(--r); padding: 12px 14px;
+  box-shadow: var(--shadow); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px;
+}
+.profile-card-av {
+  width: 44px; height: 44px; border-radius: 14px;
+  background: #EEF7FF; display: flex; align-items: center;
+  justify-content: center; font-size: 24px; flex-shrink: 0;
+}
+.profile-card-active {
+  background: #E8FFF0; color: #2D8C4E; font-size: 11px;
+  font-weight: 700; padding: 4px 10px; border-radius: 20px;
+}
+.profile-card-switch {
+  background: #EEF7FF; color: var(--sky); font-size: 11px;
+  font-weight: 700; padding: 4px 10px; border-radius: 20px;
+  border: none; cursor: pointer; font-family: 'Inter', sans-serif;
+}
+
+/* ════════════════════════════════════
+   RESPONSIVE — mobile fills screen
+════════════════════════════════════ */
+@media (max-width: 430px) {
+  body {
+    padding: 0;
+    background: var(--bg);
+    align-items: stretch;
+    justify-content: stretch;
+  }
+  .phone {
+    width: 100%;
+    height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}

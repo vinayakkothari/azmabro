@@ -17,7 +17,7 @@ const PETS = [
 ]
 
 export default function Onboard1() {
-  const { navigate, setBroEmoji, petEmoji, setPetEmoji, setPetName } = useApp()
+  const { navigate, setBroEmoji, petEmoji, setPetEmoji, setPetName, userName, setUserName } = useApp()
   const [selectedBro, setSelectedBro] = useState(0)
 
   const pickBro = (i: number) => {
@@ -38,11 +38,31 @@ export default function Onboard1() {
           <div className="ob-dot" />
           <div className="ob-dot" />
         </div>
-        <div className="ob-title">Pick your Bro Type 🤙</div>
-        <div className="ob-sub">This shapes how AzmaBro talks to you</div>
+        <div className="ob-title">Hey, what's your name? 👋</div>
+        <div className="ob-sub">We'll use this to personalise your experience</div>
       </div>
 
       <div className="ob-body scroll">
+        {/* Name input */}
+        <div className="ig" style={{ marginBottom: 20 }}>
+          <div className="il">Your name</div>
+          <input
+            className="inp"
+            type="text"
+            placeholder="e.g. Rahul, Priya, Alex…"
+            value={userName}
+            onChange={e => setUserName(e.target.value)}
+            autoFocus
+          />
+        </div>
+
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--charcoal)', marginBottom: 12 }}>
+          Pick your Bro Type 🤙
+        </div>
+        <div style={{ fontSize: 13, color: 'var(--mid)', marginBottom: 14 }}>
+          This shapes how AzmaBro talks to you
+        </div>
+
         <div className="bro-grid">
           {BRO_TYPES.map((b, i) => (
             <div

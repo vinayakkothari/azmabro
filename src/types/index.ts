@@ -30,3 +30,19 @@ export interface Medication {
   isRescue?: boolean;
   taken: boolean;
 }
+
+/** score: 0 = rough day, 1 = okay, 2 = good day */
+export interface CheckIn {
+  date: string;   // YYYY-MM-DD
+  score: number;
+}
+
+export interface Profile {
+  id: string;
+  name: string;
+  city: string;
+  broEmoji: string;
+  petEmoji: string;
+  petName: string;
+  conditions: number[];
+}
