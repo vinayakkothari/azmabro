@@ -56,31 +56,39 @@ function generateSeedCheckIns(): CheckIn[] {
   return result;
 }
 
+const DEMO_PROFILE: Profile = {
+  id: 'demo',
+  name: 'Demo Bro',
+  city: 'Mumbai',
+  broEmoji: '😎',
+  petEmoji: '🌬️',
+  petName: 'Windi',
+  conditions: [0, 1],
+};
+
 function seedIfNeeded() {
-  if (localStorage.getItem(SEED_KEY)) return;
-  // Only seed if no data exists
-  const existing = (() => { try { return JSON.parse(localStorage.getItem('az_profiles') ?? '[]'); } catch { return []; } })();
-  if (existing.length > 0) {
-    localStorage.setItem(SEED_KEY, '1');
-    return;
+  // Always ensure Demo Bro exists in the profiles list
+  const existing: Profile[] = (() => {
+    try { return JSON.parse(localStorage.getItem('az_profiles') ?? '[]'); } catch { return []; }
+  })();
+
+  const hasDemo = existing.some(p => p.id === 'demo');
+  if (!hasDemo) {
+    const updated = [...existing, DEMO_PROFILE];
+    localStorage.setItem('az_profiles', JSON.stringify(updated));
   }
 
-  const seedProfile: Profile = {
-    id: 'demo',
-    name: 'Demo Bro',
-    city: 'Mumbai',
-    broEmoji: '😎',
-    petEmoji: '🌬️',
-    petName: 'Windi',
-    conditions: [0, 1],
-  };
-  const seedMeds = DEFAULT_MEDICATIONS.map(m => ({ ...m, taken: !m.isRescue }));
-
-  localStorage.setItem('az_profiles', JSON.stringify([seedProfile]));
-  localStorage.setItem('az_checkins', JSON.stringify(generateSeedCheckIns()));
-  localStorage.setItem('az_meds',     JSON.stringify(seedMeds));
-  localStorage.setItem('az_activeId', 'demo');
+  // First-time full seed (check-ins + meds) — only when starting from scratch
+  if (localStorage.getItem(SEED_KEY)) return;
   localStorage.setItem(SEED_KEY, '1');
+
+  if (existing.length === 0) {
+    // Brand new user — seed check-ins and set demo as active
+    const seedMeds = DEFAULT_MEDICATIONS.map(m => ({ ...m, taken: !m.isRescue }));
+    localStorage.setItem('az_checkins', JSON.stringify(generateSeedCheckIns()));
+    localStorage.setItem('az_meds',     JSON.stringify(seedMeds));
+    localStorage.setItem('az_activeId', 'demo');
+  }
 }
 
 // ── Storage helpers ───────────────────────────────────────────────────────────
