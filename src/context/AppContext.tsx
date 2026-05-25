@@ -117,7 +117,8 @@ function initCheckIns() { return load<CheckIn[]>('az_checkins', []); }
 function initMeds()     { return load<Medication[]>('az_meds', DEFAULT_MEDICATIONS); }
 
 function initActiveId(profiles: Profile[]) {
-  const stored = localStorage.getItem('az_activeId');
+  // Use load() so JSON-stringified IDs are parsed correctly ("demo" → demo)
+  const stored = load<string>('az_activeId', '');
   if (stored && profiles.find(p => p.id === stored)) return stored;
   return profiles[0]?.id ?? '';
 }
